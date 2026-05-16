@@ -103,7 +103,6 @@ func main() {
 		return
 	}
 	// настройте подключение к БД
-
 	store := NewParcelStore(db) // создайте объект ParcelStore функцией NewParcelStore
 	service := NewParcelService(store)
 
