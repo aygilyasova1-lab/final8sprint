@@ -33,6 +33,7 @@ func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
 	require.NoError(t, err)
+	defer db.Close()
 	// настройте подключение к БД
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -50,11 +51,7 @@ func TestAddGetDelete(t *testing.T) {
 	newParcel, err := store.Get(lastId)
 	require.NoError(t, err)
 
-	require.Equal(t, parcel.Number, newParcel.Number)
-	require.Equal(t, parcel.Client, newParcel.Client)
-	require.Equal(t, parcel.Status, newParcel.Status)
-	require.Equal(t, parcel.Address, newParcel.Address)
-	require.Equal(t, parcel.CreatedAt, newParcel.CreatedAt)
+	require.Equal(t, parcel, newParcel)
 	// delete
 	// удалите добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что посылку больше нельзя получить из БД
@@ -70,7 +67,7 @@ func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
 	require.NoError(t, err)
-
+	defer db.Close()
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 	// add
@@ -95,6 +92,7 @@ func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
 	require.NoError(t, err)
+	defer db.Close()
 	// настройте подключение к БД
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -120,6 +118,7 @@ func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
 	require.NoError(t, err)
+	defer db.Close()
 	store := NewParcelStore(db)
 	// настройте подключение к БД
 
@@ -155,15 +154,11 @@ func TestGetByClient(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, len(parcels), len(storedParcels)) 
 	// check
-	for i, parcel := range storedParcels {
-		_, ok := parcelMap[parcel.Number]
+	for _, parcel := range storedParcels {
+		expectedParcel, ok := parcelMap[parcel.Number]
 		require.True(t, ok)
 		
-		require.Equal(t, parcels[i].Number, parcel.Number)
-		require.Equal(t, parcels[i].Client, parcel.Client)
-		require.Equal(t, parcels[i].Status, parcel.Status)
-		require.Equal(t, parcels[i].Address, parcel.Address)
-		require.Equal(t, parcels[i].CreatedAt, parcel.CreatedAt)
+		require.Equal(t, expectedParcel, parcel)
 		}
 		// в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
